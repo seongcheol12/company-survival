@@ -155,6 +155,25 @@ button{
     line-height:1.8;
     font-size:15px;
 }
+    #mobileControls{
+    position:fixed;
+    bottom:20px;
+    width:100%;
+    display:flex;
+    justify-content:space-between;
+    padding:0 20px;
+    box-sizing:border-box;
+}
+
+#mobileControls button{
+    width:80px;
+    height:80px;
+    font-size:40px;
+    border:none;
+    border-radius:50%;
+    opacity:0.8;
+}
+
 </style>
 </head>
 
@@ -245,9 +264,19 @@ A / D 또는 ← / →
 <div id="ranking">
 <b>🏆 명예의 사원 TOP 5</b><br>
 로딩중...
+
+<div id="mobileControls">
+
+    <button id="leftBtn">◀</button>
+
+    <button id="rightBtn">▶</button>
+
 </div>
 
 <div id="player">🧑‍💼</div>
+
+
+</div>
 
 <script type="module">
 
@@ -302,6 +331,28 @@ const restartBtn =
 document.getElementById("restartBtn");
 const rankingBox =
 document.getElementById("ranking");
+
+const leftBtn =
+document.getElementById("leftBtn");
+
+const rightBtn =
+document.getElementById("rightBtn");
+
+leftBtn.addEventListener("touchstart",function(){
+    leftPressed = true;
+});
+
+leftBtn.addEventListener("touchend",function(){
+    leftPressed = false;
+});
+
+rightBtn.addEventListener("touchstart",function(){
+    rightPressed = true;
+});
+
+rightBtn.addEventListener("touchend",function(){
+    rightPressed = false;
+});
 
 const badItems = ["🔥","📞","🚨"];
 const goodItems = ["💰","✈️","🏠"];
