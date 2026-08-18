@@ -105,12 +105,12 @@ button{
     position:absolute;
     bottom:20px;
     left:300px;
-    font-size:55px;
+    font-size:70px;
 }
 
 .item{
     position:absolute;
-    font-size:45px;
+    font-size:70px;
 }
 
 .hit{
@@ -125,6 +125,36 @@ button{
     100%{transform:translateX(0);}
 }
 
+#level{
+    position:absolute;
+    top:15px;
+    right:20px;
+    font-size:22px;
+    font-weight:bold;
+}
+
+#restartBtn{
+    display:none;
+    position:fixed;
+    left:50%;
+    top:50%;
+    transform:translate(-50%,-50%);
+    padding:15px 30px;
+    font-size:22px;
+    z-index:10000;
+}
+#ranking{
+    position:absolute;
+    top:130px;
+    right:15px;
+    width:250px;
+    background:white;
+    padding:12px;
+    border-radius:10px;
+    box-shadow:0 0 8px rgba(0,0,0,0.15);
+    line-height:1.8;
+    font-size:15px;
+}
 </style>
 </head>
 
@@ -184,6 +214,12 @@ button{
 <div id="score">점수 : 0</div>
 <div id="life">❤️❤️❤️</div>
 <div id="nicknameBox"></div>
+<div id="level">난이도 : 1</div>
+
+<button id="restartBtn"
+onclick="location.reload()">
+🔄 다시하기
+</button>
 
 <div id="guide">
 
@@ -206,9 +242,42 @@ A / D 또는 ← / →
 
 </div>
 
+<div id="ranking">
+<b>🏆 명예의 사원 TOP 5</b><br>
+로딩중...
+</div>
+
 <div id="player">🧑‍💼</div>
 
-<script>
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  query,
+  orderBy,
+  limit,
+  getDocs,
+  doc,
+  setDoc
+}
+} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDHJK_ZUWoY5aZdlGMZFuqhtUhIXScKzpo",
+  authDomain: "company-survival.firebaseapp.com",
+  projectId: "company-survival",
+  storageBucket: "company-survival.firebasestorage.app",
+  messagingSenderId: "596092152573",
+  appId: "1:596092152573:web:0839c6a47f37ac3319ac94"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
 
 let score = 0;
 let life = 3;
@@ -216,12 +285,21 @@ let gameOver = false;
 let gameStarted = false;
 let playerX = 300;
 let nickname = "";
+let level = 1;
+let speed = 8;
 
 const player = document.getElementById("player");
 const scoreBox = document.getElementById("score");
 const lifeBox = document.getElementById("life");
 const nicknameBox = document.getElementById("nicknameBox");
 const damage = document.getElementById("damage");
+const levelBox =
+document.getElementById("level");
+
+const restartBtn =
+document.getElementById("restartBtn");
+const rankingBox =
+document.getElementById("ranking");
 
 const badItems = ["🔥","📞","🚨"];
 const goodItems = ["💰","✈️","🏠"];
@@ -245,6 +323,7 @@ function startGame(){
 
     gameStarted = true;
 }
+window.startGame = startGame;
 
 document.addEventListener("keydown",function(e){
 
@@ -288,6 +367,16 @@ function updateLife(){
 function gameEnd(icon){
 
     gameOver = true;
+    restartBtn.style.display = "block";
+
+    setDoc(
+        doc(db,"rankings",nickname),
+        {
+            name:nickname,
+            score:score,
+            createdAt:new Date()
+        }
+    );
 
     let msg = "";
 
@@ -341,7 +430,7 @@ function createItem(icon,type){
             return;
         }
 
-        y += 10;
+        y += speed;
 
         item.style.top =
         y + "px";
@@ -423,9 +512,12 @@ setInterval(function(){
         )
     ];
 
+   for(let i=0;i<level;i++){
     createItem(icon,"bad");
+}
 
-},1500);
+
+},900);
 
 setInterval(function(){
 
@@ -441,8 +533,57 @@ setInterval(function(){
 
     createItem(icon,"good");
 
-},2200);
+},1200);
+setInterval(function(){
 
+    if(!gameStarted || gameOver)
+        return;
+
+    level++;
+
+    speed += 2;
+
+    levelBox.innerHTML =
+    "난이도 : " + level;
+
+},10000);
+async function loadRanking(){
+
+    const q = query(
+        collection(db,"rankings"),
+        orderBy("score","desc"),
+        limit(5)
+    );
+
+    const snapshot = await getDocs(q);
+
+    let html =
+    "<b>🏆 명예의 사원 TOP 5</b><br>";
+
+    let rank = 1;
+
+    snapshot.forEach((doc)=>{
+
+        const data = doc.data();
+
+        let medal = rank + "위";
+
+        if(rank === 1) medal = "🥇";
+        if(rank === 2) medal = "🥈";
+        if(rank === 3) medal = "🥉";
+
+        html +=
+        medal + " " +
+        data.name + " : " +
+        data.score + "<br>";
+
+        rank++;
+    });
+
+    rankingBox.innerHTML = html;
+}
+
+loadRanking();
 </script>
 
 </body>
