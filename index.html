@@ -254,15 +254,15 @@ A / D 또는 ← / →
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
 
 import {
-  getFirestore,
-  collection,
-  addDoc,
-  query,
-  orderBy,
-  limit,
-  getDocs,
-  doc,
-  setDoc
+ getFirestore,
+collection,
+query,
+orderBy,
+limit,
+getDocs,
+doc,
+setDoc,
+getDoc
 } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -363,19 +363,34 @@ function updateLife(){
     if(life===0) lifeBox.innerHTML="💀";
 }
 
-function gameEnd(icon){
+async function gameEnd(icon){
 
     gameOver = true;
     restartBtn.style.display = "block";
 
-    setDoc(
-        doc(db,"rankings",nickname),
+    const rankRef =
+doc(db,"rankings",nickname);
+
+const oldData =
+await getDoc(rankRef);
+
+let bestScore = 0;
+
+if(oldData.exists()){
+    bestScore = oldData.data().score;
+}
+
+if(score > bestScore){
+
+    await setDoc(
+        rankRef,
         {
             name:nickname,
             score:score,
             createdAt:new Date()
         }
     );
+}
 
     let msg = "";
 
