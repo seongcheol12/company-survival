@@ -443,6 +443,8 @@ function createItem(icon,type){
     (window.innerWidth-100);
 
     let y = -50;
+    let itemSpeed =
+speed * (0.6 + Math.random() * 0.9);
 
     item.style.left = x + "px";
     item.style.top = y + "px";
@@ -457,7 +459,7 @@ function createItem(icon,type){
             return;
         }
 
-        y += speed;
+        y += itemspeed;
 
         item.style.top =
         y + "px";
